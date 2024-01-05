@@ -100,10 +100,30 @@ async function indicTranscript(inputString) {
     return inputString;
   }
 
-  // remove emphasis and /
-  let transcriptOutput = inputString.replace(/[\/ˈː]/g, "");
+  // clean up
+  let transcriptOutput = inputString.replace(/[\/ˈˌ]/g, "");
+  transcriptOutput = transcriptOutput.replace(/t͡/g, "t");
+  transcriptOutput = transcriptOutput.replace(/d͡/g, "d");
+  transcriptOutput = transcriptOutput.replace(/ʊ̯/g, "ʊ");
+  transcriptOutput = transcriptOutput.replace(/ə̯/g, "ə");
+  console.log("Post cleaning", transcriptOutput);
 
   // Compound:
+  transcriptOutput = transcriptOutput.replace(/./g, (c, i) => {
+    ch = c + transcriptOutput[i + 1];
+
+    let x = 1;
+    // if at the beginning
+    if (i === 0 || transcriptOutput[i - 1] === " ") {
+      x = 0;
+    }
+    console.log(charMap.compound[ch]?.[x]);
+
+    return charMap.compound.hasOwnProperty(transcriptOutput[i - 1] + c)
+      ? ""
+      : charMap.compound[ch]?.[x] || c;
+  });
+  console.log("Post compound", transcriptOutput);
 
   // Vowel
   transcriptOutput = transcriptOutput.replace(/./g, (c, i) => {
@@ -113,27 +133,31 @@ async function indicTranscript(inputString) {
     if (i === 0 || transcriptOutput[i - 1] === " ") {
       x = 0;
     }
+    console.log(charMap.vowels[c]?.[x]);
 
     return charMap.vowels[c]?.[x] || c;
   });
+  console.log("Post vowel", transcriptOutput);
 
   // Consonants
-  transcriptOutput = transcriptOutput.replace(/./g, (c) => {
+  transcriptOutput = transcriptOutput.replace(/./g, (c, i) => {
     console.log(c, charMap.consonants[c]);
 
+    x = 0;
     // use first if at the beginning or followed by vowel
-    return charMap.consonants[c]?.[0] || c;
+    if (charMap.consonants.hasOwnProperty(transcriptOutput[i + 1])) {
+      x = 1;
+    }
+
+    return charMap.consonants[c]?.[x] || c;
   });
+  console.log("Post consonants", transcriptOutput);
+
+  // Clean up some characters
+  transcriptOutput = transcriptOutput.replace(/[()\.]/g, "");
 
   return transcriptOutput;
 }
 
 // I believe the government is objecting to our position
 // /aɪ/ /bɪˈliːv/ /ˈðiː/ /ˈɡʌvə(n)mənt/ /ɪz/ objecting /tuː/ /ˈaʊə(ɹ)/ /pəˈzɪʃ.(ə)n/
-
-// /ŋ/	singer, think, long
-// /ʃ/	she, station, push
-// /tʃ/	church, watching, nature, witch
-// /θ/	thirsty, nothing, math
-
-// /ʰw/	where, somewhat
