@@ -1,6 +1,8 @@
 function transliterate() {
+  let lang = document.getElementById("inputLanguage").value;
+
   // Get the text from the textarea
-  var inputText = document.getElementById("inputText").value;
+  let inputText = document.getElementById("inputText").value;
   const ipaText = document.getElementById("ipaText");
   const transcriptText = document.getElementById("transcriptText");
 
@@ -15,7 +17,7 @@ function transliterate() {
   // Log the list of words to the console
   console.log(words);
 
-  //   Create a map to store word-wikitext pairs
+  // Create a map to store word-wikitext pairs
   const wordMap = new Map();
 
   // Array to store promises for each fetch operation
@@ -24,7 +26,7 @@ function transliterate() {
   //   Process each word
   words.forEach((word) => {
     // Make an API request to get wikitext for the word
-    const fetchPromise = fetchWikitext(word)
+    const fetchPromise = fetchWikitext(lang, word)
       .then((wikitext) => {
         // Add the word and its wikitext to the map
         wordMap.set(word, wikitext);
@@ -42,37 +44,48 @@ function transliterate() {
       // All fetch operations are complete
       console.log(wordMap);
       const ipaOutput = replaceWordsWithMap(inputText, wordMap);
-      ipaText.innerHTML = `<span class="badge text-bg-secondary">IPA</span> ${ipaOutput}`;
+      ipaText.innerHTML = ipaOutput;
 
       const transcriptOutput = await indicTranscript(ipaOutput);
-      transcriptText.innerHTML = `<span class="badge text-bg-success">Indic</span> ${transcriptOutput}`;
+      transcriptText.innerHTML = transcriptOutput;
     })
     .catch((error) => {
       console.error("Error in Promise.all:", error);
     });
 }
 
-function fetchWikitext(word) {
+const langRegexMap = {
+  en: /Pronunciation[^\/]*\/([^\/]+)/i,
+  fr: /pron\|([^|]+)\|fr/,
+  de: /Lautschrift\|([^}]+)}/,
+};
+
+async function fetchWikitext(lang, word) {
   // Use the MediaWiki API to get the wikitext for the given word
   baseurl =
-    "https://en.wiktionary.org/w/api.php?action=parse&format=json&prop=wikitext&formatversion=2&origin=*&page=";
-  var apiUrl = baseurl + encodeURIComponent(word.toLowerCase());
+    "https://" +
+    lang +
+    ".wiktionary.org/w/api.php?action=parse&format=json&prop=wikitext&formatversion=2&origin=*&page=";
+  let apiUrl = baseurl + encodeURIComponent(word.toLowerCase());
 
-  // Return a promise for the fetched wikitext
-  return fetch(apiUrl)
-    .then(function (response) {
-      if (!response.ok) {
-        throw new Error("Failed to fetch wikitext");
-      }
-      return response.json();
-    })
-    .then(function (data) {
-      // Extract wikitext from the response
-      const regex = /Pronunciation[^\/]*\/([^\/]+)/i;
-      var wikitext = data.parse?.wikitext;
+  try {
+    const response = await fetch(apiUrl);
+    const data = await response.json();
+
+    // Extract wikitext from the response
+
+    if (langRegexMap.hasOwnProperty(lang)) {
+      const regex = langRegexMap[lang];
+      let wikitext = data.parse?.wikitext;
+      console.log("parsed text", regex.exec(wikitext)?.[1]);
 
       return wikitext ? regex.exec(wikitext)?.[1] || word : word;
-    });
+    }
+    return word;
+  } catch (error) {
+    console.error("Failed to fetch wikitext:", error);
+    return word;
+  }
 }
 
 function replaceWordsWithMap(inputString, wordMap) {
@@ -86,6 +99,15 @@ function replaceWordsWithMap(inputString, wordMap) {
 
   return replacedString;
 }
+
+const replacementMap = {
+  t͡: "t",
+  d͡: "d",
+  ʊ̯: "ʊ",
+  ə̯: "ə",
+  n̩: "n",
+  ɪ̯: "ɪ",
+};
 
 async function indicTranscript(inputString) {
   let charMap;
@@ -101,11 +123,11 @@ async function indicTranscript(inputString) {
   }
 
   // clean up
-  let transcriptOutput = inputString.replace(/[\/ˈˌ]/g, "");
-  transcriptOutput = transcriptOutput.replace(/t͡/g, "t");
-  transcriptOutput = transcriptOutput.replace(/d͡/g, "d");
-  transcriptOutput = transcriptOutput.replace(/ʊ̯/g, "ʊ");
-  transcriptOutput = transcriptOutput.replace(/ə̯/g, "ə");
+  let transcriptOutput = inputString.replace(/[ˈˌ]/g, "");
+  transcriptOutput = transcriptOutput.replace(
+    RegExp(Object.keys(replacementMap).join("|"), "g"),
+    (match) => replacementMap[match]
+  );
   console.log("Post cleaning", transcriptOutput);
 
   // Compound:
@@ -114,7 +136,7 @@ async function indicTranscript(inputString) {
 
     let x = 1;
     // if at the beginning
-    if (i === 0 || transcriptOutput[i - 1] === " ") {
+    if (i === 0 || transcriptOutput[i - 1] === "/") {
       x = 0;
     }
     console.log(charMap.compound[ch]?.[x]);
@@ -130,7 +152,7 @@ async function indicTranscript(inputString) {
     console.log(c, charMap.vowels[c]);
     let x = 1;
     // if at the beginning
-    if (i === 0 || transcriptOutput[i - 1] === " ") {
+    if (i === 0 || transcriptOutput[i - 1] === "/") {
       x = 0;
     }
     console.log(charMap.vowels[c]?.[x]);
@@ -154,7 +176,7 @@ async function indicTranscript(inputString) {
   console.log("Post consonants", transcriptOutput);
 
   // Clean up some characters
-  transcriptOutput = transcriptOutput.replace(/[()\.]/g, "");
+  transcriptOutput = transcriptOutput.replace(/[\/()\.]/g, "");
 
   return transcriptOutput;
 }
