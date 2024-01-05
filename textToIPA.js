@@ -158,6 +158,3 @@ async function indicTranscript(inputString) {
 
   return transcriptOutput;
 }
-
-// I believe the government is objecting to our position
-// /aɪ/ /bɪˈliːv/ /ˈðiː/ /ˈɡʌvə(n)mənt/ /ɪz/ objecting /tuː/ /ˈaʊə(ɹ)/ /pəˈzɪʃ.(ə)n/
