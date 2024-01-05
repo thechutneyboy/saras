@@ -82,7 +82,7 @@
                     </select>
                 </div>
                 <textarea id="inputText" placeholder="Enter text to transliterate..."></textarea>
-                <button class="btn btn-primary" onclick="transliterate()">Transliterate</button>
+                <button class="btn btn-primary" onclick="transliterateAndUpdateUrl()">Transliterate</button>
             </div>
             <div class="col-md-6 mb-3">
                 <div class="form-group mb-2">
@@ -103,6 +103,39 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.7/umd/popper.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.2.3/dist/js/bootstrap.bundle.min.js"></script>
     <script src="textToIPA.js"></script>
+
+    <script>
+        function getUrlParam(name) {
+            const urlParams = new URLSearchParams(window.location.search);
+            return urlParams.get(name);
+        }
+
+        function setValueAndTransliterate() {
+            const paramValue = getUrlParam('t');
+
+            const inputText = document.getElementById('inputText');
+            inputText.value = paramValue || '';
+
+            if (paramValue) {
+                transliterate();
+            }
+        }
+
+        function transliterateAndUpdateUrl() {
+                const inputText = document.getElementById('inputText');
+                const paramValue = inputText.value;
+
+                const url = new URL(window.location.href);
+                url.searchParams.set('t', paramValue);
+
+                window.history.replaceState({}, document.title, url.toString());
+
+                transliterate();
+            }
+
+
+        window.onload = setValueAndTransliterate;
+    </script>
 
 </body>
 
