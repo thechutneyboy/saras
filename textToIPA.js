@@ -108,6 +108,7 @@ const replacementMap = {
   n̩: "n",
   ɪ̯: "ɪ",
 };
+const startChars = ["/", "ˈ", "ˌ", "."];
 
 async function indicTranscript(inputString) {
   let charMap;
@@ -123,8 +124,9 @@ async function indicTranscript(inputString) {
   }
 
   // clean up
-  let transcriptOutput = inputString.replace(/[ˈˌ]/g, "");
-  transcriptOutput = transcriptOutput.replace(
+  // let transcriptOutput = inputString.replace(/[ˈˌ]/g, "");
+  let transcriptOutput = inputString.replace(
+    // transcriptOutput.replace(
     RegExp(Object.keys(replacementMap).join("|"), "g"),
     (match) => replacementMap[match]
   );
@@ -136,10 +138,10 @@ async function indicTranscript(inputString) {
 
     let x = 1;
     // if at the beginning
-    if (i === 0 || transcriptOutput[i - 1] === "/") {
+    if (i === 0 || startChars.includes(transcriptOutput[i - 1])) {
       x = 0;
     }
-    console.log(charMap.compound[ch]?.[x]);
+    // console.log(charMap.compound[ch]?.[x]);
 
     return charMap.compound.hasOwnProperty(transcriptOutput[i - 1] + c)
       ? ""
@@ -149,13 +151,12 @@ async function indicTranscript(inputString) {
 
   // Vowel
   transcriptOutput = transcriptOutput.replace(/./g, (c, i) => {
-    console.log(c, charMap.vowels[c]);
     let x = 1;
     // if at the beginning
-    if (i === 0 || transcriptOutput[i - 1] === "/") {
+    if (i === 0 || startChars.includes(transcriptOutput[i - 1])) {
       x = 0;
     }
-    console.log(charMap.vowels[c]?.[x]);
+    // console.log(charMap.vowels[c]?.[x], c);
 
     return charMap.vowels[c]?.[x] || c;
   });
@@ -163,20 +164,19 @@ async function indicTranscript(inputString) {
 
   // Consonants
   transcriptOutput = transcriptOutput.replace(/./g, (c, i) => {
-    console.log(c, charMap.consonants[c]);
-
     x = 0;
     // use first if at the beginning or followed by vowel
     if (charMap.consonants.hasOwnProperty(transcriptOutput[i + 1])) {
       x = 1;
     }
+    // console.log(charMap.consonants[c]?.[x], c);
 
     return charMap.consonants[c]?.[x] || c;
   });
   console.log("Post consonants", transcriptOutput);
 
   // Clean up some characters
-  transcriptOutput = transcriptOutput.replace(/[\/()\.]/g, "");
+  transcriptOutput = transcriptOutput.replace(/[\/()ˈˌ]/g, "");
 
   return transcriptOutput;
 }
