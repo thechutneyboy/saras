@@ -1,4 +1,4 @@
-function transliterate() {
+async function transliterate() {
   let lang = document.getElementById("inputLanguage").value;
 
   // Get the text from the textarea
@@ -7,51 +7,46 @@ function transliterate() {
   const transcriptText = document.getElementById("transcriptText");
 
   // Use a regular expression to split the text into words
-  var words = inputText.split(/\W+/);
-
-  // Filter out empty strings (resulting from multiple consecutive spaces)
-  words = words.filter(function (word) {
-    return word.trim() !== "";
-  });
-
-  // Log the list of words to the console
-  console.log(words);
+  let word_list = inputText
+    .split(/\W+/)
+    .map((word) => word.trim().toLowerCase());
+  console.log(word_list);
 
   // Create a map to store word-wikitext pairs
   const wordMap = new Map();
 
-  // Array to store promises for each fetch operation
-  const fetchPromises = [];
-
   //   Process each word
-  words.forEach((word) => {
-    // Make an API request to get wikitext for the word
-    const fetchPromise = fetchWikitext(lang, word)
-      .then((wikitext) => {
-        // Add the word and its wikitext to the map
+  for (const word of word_list) {
+    try {
+      const wikitext = await fetchWikitext(lang, word);
+
+      if (!wikitext.includes(" ")) {
         wordMap.set(word, wikitext);
-      })
-      .catch(function (error) {
-        console.error("Error fetching wikitext:", error);
-      });
+      } else {
+        // Try with proper case
+        console.log("Try again", word[0].toUpperCase(), word.substring(1));
 
-    fetchPromises.push(fetchPromise);
-  });
+        const wikitext_proper = await fetchWikitext(
+          lang,
+          word[0].toUpperCase() + word.substring(1)
+        );
+        if (!wikitext_proper.includes(" ")) {
+          wordMap.set(word, wikitext_proper);
+        } else {
+          wordMap.set(word, word);
+        }
+      }
+    } catch (error) {
+      console.error("Error fetching wikitext:", error);
+    }
+  }
 
-  // Use Promise.all to wait for all fetch promises to complete
-  Promise.all(fetchPromises)
-    .then(async () => {
-      // All fetch operations are complete
-      console.log(wordMap);
-      const ipaOutput = replaceWordsWithMap(inputText, wordMap);
-      ipaText.innerHTML = ipaOutput;
+  console.log(wordMap);
+  const ipaOutput = replaceWordsWithMap(inputText, wordMap);
+  ipaText.innerHTML = ipaOutput.replace(/\n/g, "<br>");
 
-      const transcriptOutput = await indicTranscript(ipaOutput);
-      transcriptText.innerHTML = transcriptOutput;
-    })
-    .catch((error) => {
-      console.error("Error in Promise.all:", error);
-    });
+  const transcriptOutput = await indicTranscript(ipaOutput);
+  transcriptText.innerHTML = transcriptOutput.replace(/\n/g, "<br>");
 }
 
 const langRegexMap = {
@@ -66,18 +61,17 @@ async function fetchWikitext(lang, word) {
     "https://" +
     lang +
     ".wiktionary.org/w/api.php?action=parse&format=json&prop=wikitext&formatversion=2&origin=*&page=";
-  let apiUrl = baseurl + encodeURIComponent(word.toLowerCase());
+  let apiUrl = baseurl + encodeURIComponent(word);
 
   try {
     const response = await fetch(apiUrl);
     const data = await response.json();
 
     // Extract wikitext from the response
-
     if (langRegexMap.hasOwnProperty(lang)) {
       const regex = langRegexMap[lang];
       let wikitext = data.parse?.wikitext;
-      console.log("parsed text", regex.exec(wikitext)?.[1]);
+      console.log("Parsed text", regex.exec(wikitext)?.[1]);
 
       return wikitext ? regex.exec(wikitext)?.[1] || word : word;
     }
@@ -89,12 +83,14 @@ async function fetchWikitext(lang, word) {
 }
 
 function replaceWordsWithMap(inputString, wordMap) {
-  // Create a regular expression to match words
-  const wordRegex = /\b\w+\b/g;
+  // Create a regular exeaspression to match words
+  const wordRegex = /(\b\w+\b)/g;
 
   // Use replace() with a callback function to replace each word
-  const replacedString = inputString.replace(wordRegex, function (match) {
-    return match != wordMap.get(match) ? "/" + wordMap.get(match) + "/" : match;
+  const replacedString = inputString.replace(wordRegex, (match) => {
+    return match != wordMap.get(match)
+      ? "/" + wordMap.get(match.toLowerCase()) + "/"
+      : match;
   });
 
   return replacedString;
@@ -123,10 +119,7 @@ async function indicTranscript(inputString) {
     return inputString;
   }
 
-  // clean up
-  // let transcriptOutput = inputString.replace(/[ˈˌ]/g, "");
   let transcriptOutput = inputString.replace(
-    // transcriptOutput.replace(
     RegExp(Object.keys(replacementMap).join("|"), "g"),
     (match) => replacementMap[match]
   );

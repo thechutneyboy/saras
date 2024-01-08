@@ -4,7 +4,7 @@
 <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>saras | Pronounce with Indic Scripts</title>
+    <title>saras | Speech with Indic Scripts</title>
     <meta property="og:url" content="https://thechutneyboy.github.io/saras/" />
     <meta property="og:type" content="website" />
     <meta property="og:image" content="./images/social-preview.png" />
@@ -47,29 +47,57 @@
         button:hover {
             background-color: #357ae8;
         }
+
+        .box {
+            display: inline-flex;
+            position: absolute;
+            opacity: 0;
+            transition: opacity 1s ease-in-out;
+        }
+
+        .box.visible {
+            opacity: 1;
+            transition: opacity 3s ease-in-out;
+        }
     </style>
+    <!-- Google tag (gtag.js) -->
+    <script async src="https://www.googletagmanager.com/gtag/js?id=G-5BSM82FRH2"></script>
+    <script>
+        window.dataLayer = window.dataLayer || [];
+        function gtag() { dataLayer.push(arguments); }
+        gtag('js', new Date());
+
+        gtag('config', 'G-5BSM82FRH2');
+    </script>
 </head>
 
 <body>
     <nav class="navbar navbar-expand-lg navbar-dark bg-dark fixed-top">
-        <a class="navbar-brand mx-3" href="#">saras<sup class="text-warning">𝛼</sup> <span
-                class="text-secondary">/ˈs.ɹʌs/</span></a>
-        <button class="navbar-toggler mx-3 my-1" type="button" data-toggle="collapse" data-target="#navbarNav"
-            aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
-            <span class="navbar-toggler-icon"></span>
-        </button>
-        <div class="collapse navbar-collapse" id="navbarNav">
-            <ul class="navbar-nav ml-auto">
-                <!-- <li class="nav-item active">
+        <div class="container-fluid">
+            <div style="display: inline-flex;">
+                <a class="navbar-brand ms-3 me-2" href="#">saras<sup class="text-warning">𝛼</sup></a>
+                <div class="navbar-brand text-secondary" style="height: 40px; width:50px;">
+                    <span class="box mp-1" id="text1">/ˈs.ɹʌs/</span>
+                    <span class="box visible mp-1" id="text2">सरस</span>
+                </div>
+            </div>
+            <button class="navbar-toggler mx-3 my-1" type="button" data-toggle="collapse" data-target="#navbarNav"
+                aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav ml-auto">
+                    <!-- <li class="nav-item active">
                     <a class="nav-link" href="#">Home <span class="sr-only">(current)</span></a>
                 </li> -->
-                <li class="nav-item active">
-                    <a class="nav-link" href="#">About</a>
-                </li>
-                <!-- <li class="nav-item">
-                    <a class="nav-link" href="#">Contact</a>
-                </li> -->
-            </ul>
+                    <li class="nav-item active">
+                        <a class="nav-link" href="#">About</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="#">Contact</a>
+                    </li>
+                </ul>
+            </div>
         </div>
     </nav>
 
@@ -82,11 +110,11 @@
                         <option value="fr">French</option>
                         <option value="de">German</option>
                         <option value="ipa">IPA</option>
-                        <option value="es">Spanish (TBD)</option>
-                        <option value="it">Italian (TBD)</option>
-                        <option value="it">Hindi (TBD)</option>
-                        <option value="it">Telugu (TBD)</option>
-                        <option value="it">Kannada (TBD)</option>
+                        <option value="es">Spanish (Coming Soon)</option>
+                        <option value="it">Italian (Coming Soon)</option>
+                        <option value="it">Hindi (Coming Soon)</option>
+                        <option value="it">Telugu (Coming Soon)</option>
+                        <option value="it">Kannada (Coming Soon)</option>
                     </select>
                 </div>
                 <textarea id="inputText" placeholder="Enter text to transliterate..." rows="3"></textarea>
@@ -98,8 +126,8 @@
                 <div class="form-group mb-2">
                     <select class="form-select form-select-sm" id="outputScript">
                         <option value="hi">Hindi (हिंदी)</option>
-                        <option value="te">Telugu (తెలుగు) - TBD</option>
-                        <option value="kn">Kannada (ಕನ್ನಡ) - TBD</option>
+                        <option value="te">Telugu (తెలుగు) - Coming Soon</option>
+                        <option value="kn">Kannada (ಕನ್ನಡ) - Coming Soon</option>
                     </select>
                 </div>
                 <div class="my-3">
@@ -176,6 +204,24 @@
 
         window.addEventListener("popstate", function (event) {
             setValueAndTransliterate();
+        });
+    </script>
+
+    <script>
+        // Animate transliteration
+        document.addEventListener('DOMContentLoaded', function () {
+            setInterval(() => {
+                const text1 = document.getElementById('text1');
+                const text2 = document.getElementById('text2');
+
+                if (text1.classList.contains('visible')) {
+                    text1.classList.remove('visible');
+                    text2.classList.add('visible');
+                } else {
+                    text2.classList.remove('visible');
+                    text1.classList.add('visible');
+                }
+            }, 7000);
         });
     </script>
 </body>
