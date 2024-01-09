@@ -10,6 +10,7 @@ async function transliterate() {
   let word_list = inputText
     .split(/\W+/)
     .map((word) => word.trim().toLowerCase());
+  word_list = [...new Set(word_list)];
   console.log(word_list);
 
   // Create a map to store word-wikitext pairs
