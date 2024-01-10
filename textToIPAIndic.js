@@ -1,40 +1,38 @@
 async function transliterate() {
   let lang = document.getElementById("inputLanguage").value;
 
-  // Get the text from the textarea
   let inputText = document.getElementById("inputText").value;
   const ipaText = document.getElementById("ipaText");
   const transcriptText = document.getElementById("transcriptText");
 
-  // Use a regular expression to split the text into words
   let word_list = inputText
-    .split(/\W+/)
+    .split(/[\s.,?]+/)
     .map((word) => word.trim().toLowerCase());
   word_list = [...new Set(word_list)];
   console.log(word_list);
 
-  // Create a map to store word-wikitext pairs
-  const wordMap = new Map();
+  const wordMapIPA = new Map();
 
-  //   Process each word
+  // Process each word
   for (const word of word_list) {
     try {
       const wikitext = await fetchWikitext(lang, word);
 
-      if (!wikitext.includes(" ")) {
-        wordMap.set(word, wikitext);
+      if (!wikitext.includes(" ") & (wikitext != word)) {
+        wordMapIPA.set(word, wikitext);
       } else {
         // Try with proper case
-        console.log("Try again", word[0].toUpperCase(), word.substring(1));
+        wordProper = word[0].toUpperCase() + word.substring(1);
+        console.log("Try again", wordProper);
 
-        const wikitext_proper = await fetchWikitext(
-          lang,
-          word[0].toUpperCase() + word.substring(1)
-        );
-        if (!wikitext_proper.includes(" ")) {
-          wordMap.set(word, wikitext_proper);
+        const wikitext_proper = await fetchWikitext(lang, wordProper);
+        if (
+          !wikitext_proper.includes(" ") &
+          (wikitext_proper.toLowerCase() != word)
+        ) {
+          wordMapIPA.set(word, wikitext_proper);
         } else {
-          wordMap.set(word, word);
+          wordMapIPA.set(word, word);
         }
       }
     } catch (error) {
@@ -42,11 +40,33 @@ async function transliterate() {
     }
   }
 
-  console.log(wordMap);
-  const ipaOutput = replaceWordsWithMap(inputText, wordMap);
+  console.log("wordMapIPA", wordMapIPA);
+  const ipaOutput = replaceWordsWithMap(inputText, wordMapIPA, "/");
   ipaText.innerHTML = ipaOutput.replace(/\n/g, "<br>");
 
-  const transcriptOutput = await indicTranscript(ipaOutput);
+  // Indic Character Map
+  let charMap;
+  try {
+    const response = await fetch("character_map.json");
+    const data = await response.json();
+
+    charMap = data.hindi;
+    console.log("Character Map", charMap);
+  } catch (error) {
+    console.error("Error loading character map:", error);
+  }
+
+  const wordMapIndic = new Map(
+    [...wordMapIPA].map(([key, value]) => {
+      const indicValue =
+        key !== value ? indicTranscript(value, charMap) : value;
+      console.log(key, indicValue);
+      return [key, indicValue];
+    })
+  );
+  console.log("wordMapIndic", wordMapIndic);
+
+  const transcriptOutput = replaceWordsWithMap(inputText, wordMapIndic);
   transcriptText.innerHTML = transcriptOutput.replace(/\n/g, "<br>");
 }
 
@@ -83,14 +103,12 @@ async function fetchWikitext(lang, word) {
   }
 }
 
-function replaceWordsWithMap(inputString, wordMap) {
-  // Create a regular exeaspression to match words
-  const wordRegex = /(\b\w+\b)/g;
+function replaceWordsWithMap(inputString, wordMap, delim = "") {
+  const wordRegex = /(\b[^\s]+\b)/g;
 
-  // Use replace() with a callback function to replace each word
   const replacedString = inputString.replace(wordRegex, (match) => {
     return match != wordMap.get(match)
-      ? "/" + wordMap.get(match.toLowerCase()) + "/"
+      ? delim + wordMap.get(match.toLowerCase()) + delim
       : match;
   });
 
@@ -104,27 +122,18 @@ const replacementMap = {
   ə̯: "ə",
   n̩: "n",
   ɪ̯: "ɪ",
+  i̯: "i",
+  // ɑ̃: "",
+  // ɛ̃, ""
 };
-const startChars = ["/", "ˈ", "ˌ", "."];
+const startChars = ["/", "ˈ", "ˌ", ".", ")"];
 
-async function indicTranscript(inputString) {
-  let charMap;
-  try {
-    const response = await fetch("character_map.json");
-    const data = await response.json();
-
-    charMap = data.hindi;
-    console.log(charMap);
-  } catch (error) {
-    console.error("Error loading character map:", error);
-    return inputString;
-  }
-
+function indicTranscript(inputString, charMap) {
   let transcriptOutput = inputString.replace(
     RegExp(Object.keys(replacementMap).join("|"), "g"),
     (match) => replacementMap[match]
   );
-  console.log("Post cleaning", transcriptOutput);
+  // console.log("Post cleaning", transcriptOutput);
 
   // Compound:
   transcriptOutput = transcriptOutput.replace(/./g, (c, i) => {
@@ -154,7 +163,7 @@ async function indicTranscript(inputString) {
 
     return charMap.vowels[c]?.[x] || c;
   });
-  console.log("Post vowel", transcriptOutput);
+  // console.log("Post vowel", transcriptOutput);
 
   // Consonants
   transcriptOutput = transcriptOutput.replace(/./g, (c, i) => {
@@ -167,7 +176,7 @@ async function indicTranscript(inputString) {
 
     return charMap.consonants[c]?.[x] || c;
   });
-  console.log("Post consonants", transcriptOutput);
+  // console.log("Post consonants", transcriptOutput);
 
   // Clean up some characters
   transcriptOutput = transcriptOutput.replace(/[\/()ˈˌ]/g, "");
