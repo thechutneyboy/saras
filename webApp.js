@@ -75,10 +75,20 @@ function transliterateAndUpdateUrl() {
   history.pushState({}, document.title, url.toString());
 
   transliterate();
+
+  const transliterateButton = document.getElementById("transliterate");
+  transliterateButton.classList = "btn btn-secondary";
 }
 
 window.onload = setValueAndTransliterate;
 
 window.addEventListener("popstate", function (event) {
   setValueAndTransliterate();
+});
+
+document.getElementById("inputText").addEventListener("input", function () {
+  // Change the border color to orange when the textarea is edited
+  console.log("yo!");
+  const transliterateButton = document.getElementById("transliterate");
+  transliterateButton.classList = "btn btn-warning";
 });

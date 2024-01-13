@@ -6,7 +6,7 @@ async function transliterate() {
   const transcriptText = document.getElementById("transcriptText");
 
   let word_list = inputText
-    .split(/[\s.,?]+/)
+    .split(/[\s.,?;]+/)
     .map((word) => word.trim().toLowerCase());
   word_list = [...new Set(word_list)];
   console.log(word_list);
@@ -71,7 +71,7 @@ async function transliterate() {
 }
 
 const langRegexMap = {
-  en: /Pronunciation[^\/]*\/([^\/]+)/i,
+  en: /Pronunciation=[^\/]*\/([^\/]+)/i,
   fr: /pron\|([^|]+)\|fr/,
   de: /Lautschrift\|([^}]+)}/,
 };
@@ -119,12 +119,11 @@ const replacementMap = {
   t͡: "t",
   d͡: "d",
   ʊ̯: "ʊ",
+  ɐ̯: "ɐ",
   ə̯: "ə",
   n̩: "n",
   ɪ̯: "ɪ",
   i̯: "i",
-  // ɑ̃: "",
-  // ɛ̃, ""
 };
 const startChars = ["/", "ˈ", "ˌ", ".", ")"];
 
@@ -179,7 +178,7 @@ function indicTranscript(inputString, charMap) {
   // console.log("Post consonants", transcriptOutput);
 
   // Clean up some characters
-  transcriptOutput = transcriptOutput.replace(/[\/()ˈˌ]/g, "");
+  transcriptOutput = transcriptOutput.replace(/[\/()]/g, "");
 
   return transcriptOutput;
 }

@@ -120,20 +120,28 @@
                     </select>
                 </div>
                 <textarea id="inputText" placeholder="Enter text to transliterate..." rows="3"></textarea>
-                <button class="btn btn-primary" onclick="transliterateAndUpdateUrl()">
+                <button id="transliterate" class="btn btn-secondary" onclick="transliterateAndUpdateUrl()">
                     Transliterate
                 </button>
-                <button class="btn btn-light" onclick="clearEverything()">
+                <button class="btn btn-light" onclick="clearEverything()" type="reset">
                     Clear
                 </button>
             </div>
             <div class="col-md-6 mb-3">
-                <div class="form-group mb-2">
+                <div class="form-group mb-2 d-flex">
                     <select class="form-select form-select-sm" id="outputScript">
                         <option value="hi">Hindi (हिंदी)</option>
                         <option value="te">Telugu (తెలుగు) - Coming Soon</option>
                         <option value="kn">Kannada (ಕನ್ನಡ) - Coming Soon</option>
                     </select>
+                    <div class="dropdown">
+                        <button class="bi bi-share-fill mx-1 btn btn-light btn-sm" data-bs-toggle="dropdown"
+                            aria-expanded="false"></button>
+                        <ul class="dropdown-menu">
+                            <li><button class="dropdown-item disabled" type="button">Link</button></li>
+                            <li><button class="dropdown-item disabled" type="button">Text</button></li>
+                        </ul>
+                    </div>
                 </div>
                 <div class="my-3">
                     <p class="mx-2">
