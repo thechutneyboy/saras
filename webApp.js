@@ -119,7 +119,7 @@ if (navigator.share) {
         copyText += inputList[i] + "\n" + transcriptList[i] + "\n";
       }
       await navigator.share({
-        text: window.location.href,
+        text: copyText,
       });
     } catch (error) {
       console.error("Error sharing:", error);
