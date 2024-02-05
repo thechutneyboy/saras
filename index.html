@@ -22,9 +22,13 @@
             padding-top: 56px;
             font-family: Arial, sans-serif;
             background-color: #f8f9fa;
+            display: flex;
+            flex-direction: column;
+            height: 100vh;
         }
 
         .container {
+            flex: 1;
             margin-top: 20px;
         }
 
@@ -59,6 +63,10 @@
         .box.visible {
             opacity: 1;
             transition: opacity 3s ease-in-out;
+        }
+
+        footer {
+            font-size: smaller;
         }
     </style>
     <!-- Google tag (gtag.js) -->
@@ -119,7 +127,7 @@
                         <option value="it">Kannada (Coming Soon)</option>
                     </select>
                 </div>
-                <textarea id="inputText" placeholder="Enter text to transliterate..." rows="3"></textarea>
+                <textarea id="inputText" placeholder="Type or scan the text to transliterate..." rows="3"></textarea>
                 <button id="transliterate" class="btn btn-secondary" onclick="transliterateAndUpdateUrl()">
                     Transliterate
                 </button>
@@ -138,8 +146,8 @@
                         <button class="bi bi-share-fill mx-1 btn btn-light btn-sm" data-bs-toggle="dropdown"
                             aria-expanded="false"></button>
                         <ul class="dropdown-menu">
-                            <li><button class="dropdown-item disabled" type="button">Link</button></li>
-                            <li><button class="dropdown-item disabled" type="button">Text</button></li>
+                            <li><button id="shareLink" class="dropdown-item" type="button">Link</button></li>
+                            <li><button id="shareText" class="dropdown-item" type="button">Text</button></li>
                         </ul>
                     </div>
                 </div>
@@ -157,10 +165,18 @@
                         </span>
                     </p>
                 </div>
-
             </div>
         </div>
     </div>
+    <footer class="text-muted">
+        <p class="text-center">Made with <i class="bi bi-heart-fill text-danger"></i>
+            by <i class="bi bi-twitter-x"></i> <a class="text-decoration-none text-primary"
+                href="https://twitter.com/thechutneyboy">thechutneyboy</a> |
+            <a rel="license" class="text-decoration-none text-muted"
+                href="https://www.gnu.org/licenses/gpl-3.0.en.html">GNU
+                GPL-3.0</a>
+        </p>
+    </footer>
 
     <!-- Include Bootstrap JS and Popper.js -->
     <script src="https://code.jquery.com/jquery-3.3.1.slim.min.js"></script>

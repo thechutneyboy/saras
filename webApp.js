@@ -87,8 +87,49 @@ window.addEventListener("popstate", function (event) {
 });
 
 document.getElementById("inputText").addEventListener("input", function () {
-  // Change the border color to orange when the textarea is edited
-  console.log("yo!");
   const transliterateButton = document.getElementById("transliterate");
   transliterateButton.classList = "btn btn-warning";
 });
+
+// Share Link or Text
+const shareLink = document.getElementById("shareLink");
+const shareText = document.getElementById("shareText");
+
+const inputText = document.getElementById("inputText");
+const transcriptText = document.getElementById("transcriptText");
+
+if (navigator.share) {
+  shareLink.addEventListener("click", async () => {
+    try {
+      await navigator.share({
+        url: window.location.href,
+      });
+    } catch (error) {
+      console.error("Error sharing:", error);
+    }
+  });
+  shareText.addEventListener("click", async () => {
+    try {
+      // Alternate input and transliterate
+      const inputList = inputText.value.split("\n");
+      const transcriptList = transcriptText.innerText.split("\n");
+
+      let copyText = "";
+      for (let i = 0; i < inputList.length; i++) {
+        copyText += inputList[i] + "\n" + transcriptList[i] + "\n";
+      }
+      await navigator.share({
+        text: window.location.href,
+      });
+    } catch (error) {
+      console.error("Error sharing:", error);
+    }
+  });
+} else {
+  shareLink.addEventListener("click", () => {
+    alert("Sharing is not supported on this device/browser.");
+  });
+  shareText.addEventListener("click", () => {
+    alert("Sharing is not supported on this device/browser.");
+  });
+}
