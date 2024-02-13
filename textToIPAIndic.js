@@ -6,7 +6,7 @@ async function transliterate() {
   const transcriptText = document.getElementById("transcriptText");
 
   let word_list = inputText
-    .split(/[\s.,?;]+/)
+    .split(/[\s.,-;?!]+/)
     .map((word) => word.trim().toLowerCase());
   word_list = [...new Set(word_list)];
   console.log(word_list);
@@ -74,6 +74,7 @@ const langRegexMap = {
   en: /Pronunciation=[^\/]*\/([^\/]+)/i,
   fr: /pron\|([^|]+)\|fr/,
   de: /Lautschrift\|([^}]+)}/,
+  it: /IPA\|\/([^}]+)\//,
 };
 
 async function fetchWikitext(lang, word) {
@@ -104,9 +105,10 @@ async function fetchWikitext(lang, word) {
 }
 
 function replaceWordsWithMap(inputString, wordMap, delim = "") {
-  const wordRegex = /(\b[^\s]+\b)/g;
+  const wordRegex = /([a-zA-Zà-üÀ-Ü\u00C0-\u017F]+)/g;
 
   const replacedString = inputString.replace(wordRegex, (match) => {
+    console.log(match);
     return match != wordMap.get(match)
       ? delim + wordMap.get(match.toLowerCase()) + delim
       : match;

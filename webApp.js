@@ -22,7 +22,6 @@ const tooltipList = [...tooltipTriggerList].map(
 );
 
 function clearOutput() {
-  console.log("there");
   const ipaText = document.getElementById("ipaText");
   ipaText.innerHTML =
     '<span class="placeholder col-5 bg-secondary"></span> <span class="placeholder col-4 bg-secondary"></span>';
@@ -34,7 +33,6 @@ function clearOutput() {
 function clearEverything() {
   const inputText = document.getElementById("inputText");
   inputText.value = "";
-  console.log("hi");
 
   clearOutput();
 }
